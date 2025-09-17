@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Search as SearchIcon } from "lucide-react";
 import { Link } from "wouter";
 import { useSearchNews, useTrending } from "@/hooks/use-news";
@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import NewsCard from "@/components/NewsCard";
-import { useDebounce } from "@/hooks/use-mobile"; // We'll reuse the mobile hook pattern
 
 export default function Search() {
   const [query, setQuery] = useState("");
@@ -161,7 +160,7 @@ export default function Search() {
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
-  useState(() => {
+  useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay);
