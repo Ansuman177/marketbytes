@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(222, 84%, 5%);
+  --foreground: hsl(210, 40%, 96%);
+  --card: hsl(217, 33%, 11%);
+  --card-foreground: hsl(210, 40%, 96%);
+  --popover: hsl(217, 33%, 11%);
+  --popover-foreground: hsl(210, 40%, 96%);
+  --primary: hsl(158, 64%, 52%);
+  --primary-foreground: hsl(210, 40%, 2%);
+  --secondary: hsl(217, 33%, 17%);
+  --secondary-foreground: hsl(210, 40%, 96%);
+  --muted: hsl(217, 33%, 17%);
+  --muted-foreground: hsl(215, 20%, 65%);
+  --accent: hsl(217, 33%, 17%);
+  --accent-foreground: hsl(210, 40%, 96%);
+  --destructive: hsl(0, 63%, 66%);
+  --destructive-foreground: hsl(210, 40%, 96%);
+  --border: hsl(217, 33%, 17%);
+  --input: hsl(217, 33%, 17%);
+  --ring: hsl(158, 64%, 52%);
+  --chart-1: hsl(158, 64%, 52%);
+  --chart-2: hsl(159, 100%, 36%);
+  --chart-3: hsl(42, 92%, 56%);
+  --chart-4: hsl(147, 78%, 42%);
+  --chart-5: hsl(341, 75%, 51%);
+  --sidebar: hsl(217, 33%, 11%);
+  --sidebar-foreground: hsl(210, 40%, 96%);
+  --sidebar-primary: hsl(158, 64%, 52%);
+  --sidebar-primary-foreground: hsl(210, 40%, 2%);
+  --sidebar-accent: hsl(217, 33%, 17%);
+  --sidebar-accent-foreground: hsl(210, 40%, 96%);
+  --sidebar-border: hsl(217, 33%, 17%);
+  --sidebar-ring: hsl(158, 64%, 52%);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+  --radius: 0.75rem;
+  --shadow-2xs: 0px 2px 0px 0px hsl(158, 64%, 52% / 0.00);
+  --shadow-xs: 0px 2px 0px 0px hsl(158, 64%, 52% / 0.00);
+  --shadow-sm: 0px 2px 0px 0px hsl(158, 64%, 52% / 0.00), 0px 1px 2px -1px hsl(158, 64%, 52% / 0.00);
+  --shadow: 0px 2px 0px 0px hsl(158, 64%, 52% / 0.00), 0px 1px 2px -1px hsl(158, 64%, 52% / 0.00);
+  --shadow-md: 0px 2px 0px 0px hsl(158, 64%, 52% / 0.00), 0px 2px 4px -1px hsl(158, 64%, 52% / 0.00);
+  --shadow-lg: 0px 2px 0px 0px hsl(158, 64%, 52% / 0.00), 0px 4px 6px -1px hsl(158, 64%, 52% / 0.00);
+  --shadow-xl: 0px 2px 0px 0px hsl(158, 64%, 52% / 0.00), 0px 8px 10px -1px hsl(158, 64%, 52% / 0.00);
+  --shadow-2xl: 0px 2px 0px 0px hsl(158, 64%, 52% / 0.00);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+.dark {
+  --background: hsl(222, 84%, 5%);
+  --foreground: hsl(210, 40%, 96%);
+  --card: hsl(217, 33%, 11%);
+  --card-foreground: hsl(210, 40%, 96%);
+  --popover: hsl(217, 33%, 11%);
+  --popover-foreground: hsl(210, 40%, 96%);
+  --primary: hsl(158, 64%, 52%);
+  --primary-foreground: hsl(210, 40%, 2%);
+  --secondary: hsl(217, 33%, 17%);
+  --secondary-foreground: hsl(210, 40%, 96%);
+  --muted: hsl(217, 33%, 17%);
+  --muted-foreground: hsl(215, 20%, 65%);
+  --accent: hsl(217, 33%, 17%);
+  --accent-foreground: hsl(210, 40%, 96%);
+  --destructive: hsl(0, 63%, 66%);
+  --destructive-foreground: hsl(210, 40%, 96%);
+  --border: hsl(217, 33%, 17%);
+  --input: hsl(217, 33%, 17%);
+  --ring: hsl(158, 64%, 52%);
+  --chart-1: hsl(158, 64%, 52%);
+  --chart-2: hsl(159, 100%, 36%);
+  --chart-3: hsl(42, 92%, 56%);
+  --chart-4: hsl(147, 78%, 42%);
+  --chart-5: hsl(341, 75%, 51%);
+  --sidebar: hsl(217, 33%, 11%);
+  --sidebar-foreground: hsl(210, 40%, 96%);
+  --sidebar-primary: hsl(158, 64%, 52%);
+  --sidebar-primary-foreground: hsl(210, 40%, 2%);
+  --sidebar-accent: hsl(217, 33%, 17%);
+  --sidebar-accent-foreground: hsl(210, 40%, 96%);
+  --sidebar-border: hsl(217, 33%, 17%);
+  --sidebar-ring: hsl(158, 64%, 52%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .card-shadow {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  .news-card {
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .news-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .ticker-tag {
+    background: linear-gradient(135deg, hsl(158, 64%, 52%) 0%, hsl(158, 64%, 45%) 100%);
+  }
+
+  .sector-tag {
+    background: linear-gradient(135deg, hsl(217, 33%, 25%) 0%, hsl(217, 33%, 20%) 100%);
+  }
+
+  .scroll-container {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scroll-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .market-status-positive {
+    color: hsl(158, 64%, 52%);
+  }
+
+  .market-status-negative {
+    color: hsl(0, 63%, 66%);
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { 
+      opacity: 0; 
+      transform: translateY(20px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+}
