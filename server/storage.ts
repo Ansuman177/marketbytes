@@ -62,6 +62,7 @@ export class MemStorage implements IStorage {
       id,
       timestamp: new Date(),
       isProcessed: true,
+      imageUrl: insertArticle.imageUrl ?? null,
     };
     this.newsArticles.set(id, article);
     return article;
@@ -87,13 +88,14 @@ export class MemStorage implements IStorage {
       ...insertItem,
       id,
       addedAt: new Date(),
+      userId: insertItem.userId ?? null,
     };
     this.watchlistItems.set(id, item);
     return item;
   }
 
   async removeFromWatchlist(userId: string, ticker: string): Promise<boolean> {
-    for (const [id, item] of this.watchlistItems.entries()) {
+    for (const [id, item] of Array.from(this.watchlistItems.entries())) {
       if (item.userId === userId && item.ticker === ticker) {
         this.watchlistItems.delete(id);
         return true;
