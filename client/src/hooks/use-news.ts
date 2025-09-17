@@ -1,5 +1,6 @@
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { queryClient } from "@/lib/queryClient";
 
 export function useNews() {
   return useInfiniteQuery({
@@ -9,6 +10,7 @@ export function useNews() {
       return lastPage.length === 20 ? allPages.length : undefined;
     },
     initialPageParam: 0,
+    refetchInterval: 60000, // Refetch every minute
   });
 }
 
@@ -25,6 +27,19 @@ export function useMarketSummary() {
     queryKey: ["/api/market-summary"],
     queryFn: api.getMarketSummary,
     refetchInterval: 30000, // Refetch every 30 seconds
+  });
+}
+
+export function useRefreshNews() {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/news/refresh', { method: 'POST' });
+      if (!response.ok) throw new Error('Failed to refresh news');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/news"] });
+    },
   });
 }
 

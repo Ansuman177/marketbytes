@@ -38,6 +38,17 @@ app.use((req, res, next) => {
 
 (async () => {
   const server = await registerRoutes(app);
+  
+  // Start periodic news fetching (every 5 minutes)
+  const { newsService } = await import("./services/newsService");
+  setInterval(async () => {
+    try {
+      await newsService.fetchLatestNews();
+      console.log("Periodic news fetch completed");
+    } catch (error) {
+      console.error("Periodic news fetch failed:", error);
+    }
+  }, 5 * 60 * 1000); // 5 minutes
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
