@@ -23,7 +23,7 @@ export class NewsService {
   private readonly API_KEY = process.env.NEWS_API_KEY || process.env.NEWSAPI_KEY || "your_news_api_key";
   private readonly BASE_URL = "https://newsapi.org/v2";
 
-  async fetchLatestNews(): Promise<void> {
+  async fetchLatestNews(): Promise<{ success: boolean; message: string; stats: { fetched: number; processed: number; failed: number } }> {
     try {
       // Fetch news from NewsAPI with Indian financial sources
       const response = await fetch(
@@ -44,37 +44,92 @@ export class NewsService {
       
       if (!data.articles || data.articles.length === 0) {
         console.log("No new articles found");
-        return;
+        return { success: true, message: "No new articles found", stats: { fetched: 0, processed: 0, failed: 0 } };
       }
 
-      // Process each article with AI
-      for (const article of data.articles) {
-        await this.processAndStoreArticle(article);
+      let processed = 0;
+      let failed = 0;
+      
+      // Process articles in smaller batches to avoid timeouts
+      const BATCH_SIZE = 10;
+      const articles = data.articles;
+      
+      for (let i = 0; i < articles.length; i += BATCH_SIZE) {
+        const batch = articles.slice(i, i + BATCH_SIZE);
+        console.log(`Processing batch ${Math.floor(i/BATCH_SIZE) + 1}/${Math.ceil(articles.length/BATCH_SIZE)} (${batch.length} articles)`);
+        
+        for (const article of batch) {
+          const result = await this.processAndStoreArticle(article);
+          if (result.success) {
+            processed++;
+          } else if (result.skipped) {
+            // Don't count skipped articles as failures
+          } else {
+            failed++;
+          }
+        }
+        
+        // Add a small delay between batches to avoid overwhelming OpenAI
+        if (i + BATCH_SIZE < articles.length) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
+
+      const fetched = data.articles.length;
+      const successMessage = `Fetched ${fetched} articles. Processed ${processed} new articles successfully.${failed > 0 ? ` ${failed} articles had processing issues but basic data was still saved.` : ''}`;
+      
+      return {
+        success: true,
+        message: successMessage,
+        stats: { fetched, processed, failed }
+      };
 
     } catch (error) {
       console.error("Error fetching news:", error);
+      return {
+        success: false,
+        message: `Failed to fetch news: ${error instanceof Error ? error.message : String(error)}`,
+        stats: { fetched: 0, processed: 0, failed: 0 }
+      };
     }
   }
 
-  private async processAndStoreArticle(rawArticle: RawNewsItem): Promise<void> {
+  private async processAndStoreArticle(rawArticle: RawNewsItem): Promise<{ success: boolean; skipped: boolean }> {
     try {
       // Check if article already exists
       const existingArticles = await storage.getNewsArticles();
       const exists = existingArticles.some(existing => existing.sourceUrl === rawArticle.url);
       
       if (exists) {
-        return; // Skip if already processed
+        return { success: false, skipped: true }; // Skip if already processed
       }
 
-      // Process with AI
-      const processedNews = await openaiService.processNewsArticle(
-        rawArticle.title,
-        rawArticle.description || "",
-        rawArticle.url
-      );
+      let processedNews: ProcessedNews;
+      let isProcessed = false;
 
-      // Store in database
+      try {
+        // Try to process with AI
+        processedNews = await openaiService.processNewsArticle(
+          rawArticle.title,
+          rawArticle.description || "",
+          rawArticle.url
+        );
+        isProcessed = true;
+      } catch (aiError) {
+        console.error("Error processing with OpenAI:", aiError instanceof Error ? aiError.message : String(aiError));
+        
+        // Fallback: create basic article data without AI processing
+        processedNews = {
+          headline: rawArticle.title,
+          summary: rawArticle.description || "Article summary not available - processing will be retried later.",
+          tags: [],
+          tickers: [],
+          sectors: []
+        };
+        isProcessed = false;
+      }
+
+      // Store in database (either processed or basic version)
       const articleData: InsertNewsArticle = {
         headline: processedNews.headline,
         summary: processedNews.summary,
@@ -84,14 +139,22 @@ export class NewsService {
         tags: processedNews.tags,
         tickers: processedNews.tickers,
         sectors: processedNews.sectors,
-        isProcessed: true,
+        isProcessed,
       };
 
       await storage.createNewsArticle(articleData);
-      console.log(`Processed and stored: ${processedNews.headline}`);
+      
+      if (isProcessed) {
+        console.log(`Processed and stored: ${processedNews.headline}`);
+      } else {
+        console.log(`Stored basic article (processing failed): ${processedNews.headline}`);
+      }
+
+      return { success: isProcessed, skipped: false };
 
     } catch (error) {
       console.error("Error processing article:", error);
+      return { success: false, skipped: false };
     }
   }
 

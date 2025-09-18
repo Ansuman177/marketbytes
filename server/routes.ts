@@ -60,11 +60,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Refresh news feed (manual trigger for fetching latest news)
   app.post("/api/news/refresh", async (req, res) => {
     try {
-      await newsService.fetchLatestNews();
-      res.json({ message: "News feed refreshed successfully" });
+      const result = await newsService.fetchLatestNews();
+      
+      if (result.success) {
+        res.json({ 
+          message: result.message,
+          stats: result.stats,
+          success: true
+        });
+      } else {
+        res.status(500).json({ 
+          message: result.message,
+          stats: result.stats,
+          success: false
+        });
+      }
     } catch (error) {
       console.error("Error refreshing news:", error);
-      res.status(500).json({ message: "Failed to refresh news feed" });
+      res.status(500).json({ 
+        message: "Failed to refresh news feed",
+        success: false
+      });
     }
   });
 

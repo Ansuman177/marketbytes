@@ -1,6 +1,7 @@
 import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export function useNews() {
   return useInfiniteQuery({
@@ -31,14 +32,83 @@ export function useMarketSummary() {
 }
 
 export function useRefreshNews() {
+  const { toast } = useToast();
+  
   return useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/news/refresh', { method: 'POST' });
-      if (!response.ok) throw new Error('Failed to refresh news');
-      return response.json();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
+      try {
+        const response = await fetch('/api/news/refresh', { 
+          method: 'POST',
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        clearTimeout(timeoutId);
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to refresh news');
+        }
+        
+        return data;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw new Error('Request timed out - refresh is taking longer than expected');
+        }
+        throw error;
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/news"] });
+      
+      // Show success toast with details
+      if (data.stats) {
+        const { fetched, processed, failed } = data.stats;
+        
+        if (failed > 0) {
+          // Mixed results - some articles had issues
+          toast({
+            title: "News Refreshed",
+            description: `Found ${fetched} articles. ${processed} fully processed, ${failed} with basic data saved (AI processing limited).`,
+            variant: "default",
+          });
+        } else if (processed > 0) {
+          // All good
+          toast({
+            title: "News Refreshed Successfully",
+            description: `${processed} new articles added to your feed.`,
+            variant: "default",
+          });
+        } else {
+          // No new articles
+          toast({
+            title: "News Feed Updated",
+            description: "No new articles found. Your feed is up to date.",
+            variant: "default",
+          });
+        }
+      } else {
+        // Fallback message
+        toast({
+          title: "News Refreshed",
+          description: data.message || "News feed updated successfully.",
+          variant: "default",
+        });
+      }
+    },
+    onError: (error: Error) => {
+      // Show error toast
+      toast({
+        title: "Refresh Failed",
+        description: error.message || "Unable to refresh news feed. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 }
