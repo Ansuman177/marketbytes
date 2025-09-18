@@ -20,29 +20,65 @@ interface ProcessedNews {
 }
 
 export class NewsService {
-  private readonly API_KEY = process.env.NEWS_API_KEY || process.env.NEWSAPI_KEY || "your_news_api_key";
-  private readonly BASE_URL = "https://newsapi.org/v2";
+  // RSS Feed URLs for fresh Indian financial news
+  private readonly RSS_FEEDS = [
+    "https://news.google.com/rss/search?q=indian+stock+market+business+finance&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=NSE+BSE+sensex+nifty&hl=en-IN&gl=IN&ceid=IN:en", 
+    "https://economictimes.indiatimes.com/rssfeedsdefault.cms",
+    "https://www.business-standard.com/rss/latest.rss",
+    "https://www.zeebiz.com/rss",
+    "http://feeds.reuters.com/Reuters/worldNews",
+    "https://www.reuters.com/business/finance/rss"
+  ];
 
   async fetchLatestNews(): Promise<{ success: boolean; message: string; stats: { fetched: number; processed: number; failed: number } }> {
     try {
-      // Fetch news from NewsAPI with Indian financial sources
-      const response = await fetch(
-        `${this.BASE_URL}/everything?` +
-        `sources=the-times-of-india,economic-times&` +
-        `q=(stock OR shares OR NSE OR BSE OR "Reserve Bank" OR RBI OR earnings OR merger OR acquisition)&` +
-        `language=en&` +
-        `sortBy=publishedAt&` +
-        `pageSize=50&` +
-        `apiKey=${this.API_KEY}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`News API error: ${response.status}`);
-      }
-
-      const data = await response.json();
+      console.log("Fetching news from RSS feeds...");
       
-      if (!data.articles || data.articles.length === 0) {
+      const allArticles = [];
+      
+      // Fetch from all RSS feeds in parallel
+      const feedPromises = this.RSS_FEEDS.map(async (feedUrl) => {
+        try {
+          console.log(`Fetching from: ${feedUrl}`);
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+          
+          const response = await fetch(feedUrl, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          
+          if (!response.ok) {
+            console.warn(`Failed to fetch from ${feedUrl}: ${response.status}`);
+            return [];
+          }
+          
+          const xmlText = await response.text();
+          const articles = this.parseRSSFeed(xmlText, feedUrl);
+          console.log(`Got ${articles.length} articles from ${feedUrl}`);
+          return articles;
+        } catch (error) {
+          console.error(`Error fetching ${feedUrl}:`, error);
+          return [];
+        }
+      });
+
+      const feedResults = await Promise.allSettled(feedPromises);
+      feedResults.forEach((result) => {
+        if (result.status === 'fulfilled') {
+          allArticles.push(...result.value);
+        }
+      });
+      
+      // Remove duplicates by URL before sorting
+      const uniqueArticles = this.deduplicateArticles(allArticles);
+      
+      // Sort articles by publication date (newest first)
+      uniqueArticles.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+      
+      // Take top 50 most recent articles
+      const recentArticles = uniqueArticles.slice(0, 50);
+      
+      if (!recentArticles || recentArticles.length === 0) {
         console.log("No new articles found");
         return { success: true, message: "No new articles found", stats: { fetched: 0, processed: 0, failed: 0 } };
       }
@@ -50,8 +86,8 @@ export class NewsService {
       let processed = 0;
       let failed = 0;
       
-      // Process only first 3 articles immediately for quick response
-      const quickBatch = data.articles.slice(0, 3);
+      // Process only first 3 articles immediately for quick response  
+      const quickBatch = recentArticles.slice(0, 3);
       
       for (const article of quickBatch) {
         const result = await this.processAndStoreArticle(article);
@@ -65,12 +101,12 @@ export class NewsService {
       }
       
       // Process remaining articles in background (don't await)
-      if (data.articles.length > 3) {
-        this.processRemainingArticlesInBackground(data.articles.slice(3));
+      if (recentArticles.length > 3) {
+        this.processRemainingArticlesInBackground(recentArticles.slice(3));
       }
 
-      const fetched = data.articles.length;
-      const successMessage = `Processing ${fetched} articles. ${processed + failed} ready now, others processing in background.`;
+      const fetched = recentArticles.length;
+      const successMessage = `Processing ${fetched} articles from RSS feeds. ${processed + failed} ready now, others processing in background.`;
       
       return {
         success: true,
@@ -85,6 +121,106 @@ export class NewsService {
         message: `Failed to fetch news: ${error instanceof Error ? error.message : String(error)}`,
         stats: { fetched: 0, processed: 0, failed: 0 }
       };
+    }
+  }
+
+  // Parse RSS XML to extract articles
+  private parseRSSFeed(xmlText: string, feedUrl: string): RawNewsItem[] {
+    const articles: RawNewsItem[] = [];
+    
+    try {
+      // Simple XML parsing for RSS items
+      const itemMatches = xmlText.match(/<item[\s\S]*?<\/item>/gi) || [];
+      
+      for (const itemXml of itemMatches) {
+        const title = this.extractXmlValue(itemXml, 'title');
+        const description = this.extractXmlValue(itemXml, 'description');
+        const link = this.extractXmlValue(itemXml, 'link');
+        const pubDate = this.extractXmlValue(itemXml, 'pubDate');
+        
+        if (title && link) {
+          // Clean up encoded Google News URLs
+          const cleanLink = link.includes('news.google.com') ? 
+            this.extractGoogleNewsUrl(link) : link;
+          
+          articles.push({
+            title: this.cleanHtmlTags(title),
+            description: this.cleanHtmlTags(description || title),
+            url: cleanLink,
+            publishedAt: this.parseDate(pubDate),
+            source: { name: this.getSourceName(feedUrl) }
+          });
+        }
+      }
+    } catch (error) {
+      console.error(`Error parsing RSS feed from ${feedUrl}:`, error);
+    }
+    
+    return articles;
+  }
+
+  private extractXmlValue(xml: string, tag: string): string {
+    const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i');
+    const match = xml.match(regex);
+    return match ? match[1].trim() : '';
+  }
+
+  private cleanHtmlTags(text: string): string {
+    return text.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim();
+  }
+
+  private extractGoogleNewsUrl(googleUrl: string): string {
+    try {
+      // Google News URLs often contain the real URL after &url= parameter
+      const urlMatch = googleUrl.match(/&url=([^&]+)/);
+      if (urlMatch) {
+        return decodeURIComponent(urlMatch[1]);
+      }
+    } catch (error) {
+      console.error('Error extracting Google News URL:', error);
+    }
+    return googleUrl;
+  }
+
+  private parseDate(dateStr: string): string {
+    if (!dateStr) return new Date().toISOString();
+    
+    try {
+      const date = new Date(dateStr);
+      return isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+    } catch {
+      return new Date().toISOString();
+    }
+  }
+
+  private getSourceName(feedUrl: string): string {
+    if (feedUrl.includes('economictimes')) return 'Economic Times';
+    if (feedUrl.includes('business-standard')) return 'Business Standard';
+    if (feedUrl.includes('zeebiz')) return 'Zee Business';
+    if (feedUrl.includes('news.google.com')) return 'Google News';
+    if (feedUrl.includes('reuters')) return 'Reuters';
+    return 'RSS Feed';
+  }
+
+  private deduplicateArticles(articles: RawNewsItem[]): RawNewsItem[] {
+    const seen = new Set<string>();
+    return articles.filter((article) => {
+      const normalizedUrl = this.normalizeUrl(article.url);
+      if (seen.has(normalizedUrl)) {
+        return false;
+      }
+      seen.add(normalizedUrl);
+      return true;
+    });
+  }
+
+  private normalizeUrl(url: string): string {
+    try {
+      // Remove query parameters and fragments for better deduplication
+      const urlObj = new URL(url);
+      return `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}`;
+    } catch {
+      return url;
     }
   }
 
