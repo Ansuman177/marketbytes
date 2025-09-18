@@ -8,7 +8,7 @@ export interface IStorage {
   
   getNewsArticles(limit?: number, offset?: number): Promise<NewsArticle[]>;
   getNewsArticleById(id: string): Promise<NewsArticle | undefined>;
-  createNewsArticle(article: InsertNewsArticle): Promise<NewsArticle>;
+  createNewsArticle(article: InsertNewsArticle, publishedAt?: string): Promise<NewsArticle>;
   searchNewsArticles(query: string, limit?: number): Promise<NewsArticle[]>;
   
   getWatchlistItems(userId: string): Promise<WatchlistItem[]>;
@@ -55,14 +55,17 @@ export class MemStorage implements IStorage {
     return this.newsArticles.get(id);
   }
 
-  async createNewsArticle(insertArticle: InsertNewsArticle): Promise<NewsArticle> {
+  async createNewsArticle(insertArticle: InsertNewsArticle, publishedAt?: string): Promise<NewsArticle> {
     const id = randomUUID();
     const article: NewsArticle = {
       ...insertArticle,
       id,
-      timestamp: new Date(),
-      isProcessed: true,
+      timestamp: publishedAt ? new Date(publishedAt) : new Date(),
+      isProcessed: insertArticle.isProcessed ?? true,
       imageUrl: insertArticle.imageUrl ?? null,
+      tags: insertArticle.tags ?? [],
+      tickers: insertArticle.tickers ?? [],
+      sectors: insertArticle.sectors ?? [],
     };
     this.newsArticles.set(id, article);
     return article;

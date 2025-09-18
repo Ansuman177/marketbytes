@@ -142,7 +142,7 @@ export class NewsService {
         isProcessed,
       };
 
-      await storage.createNewsArticle(articleData);
+      await storage.createNewsArticle(articleData, rawArticle.publishedAt);
       
       if (isProcessed) {
         console.log(`Processed and stored: ${processedNews.headline}`);
@@ -207,7 +207,7 @@ export class NewsService {
     ];
 
     for (const article of seedArticles) {
-      await storage.createNewsArticle(article);
+      await storage.createNewsArticle(article, new Date().toISOString());
     }
 
     console.log("Initial news data seeded successfully");
