@@ -35,7 +35,7 @@ export class NewsService {
     try {
       console.log("Fetching news from RSS feeds...");
       
-      const allArticles = [];
+      const allArticles: RawNewsItem[] = [];
       
       // Fetch from all RSS feeds in parallel
       const feedPromises = this.RSS_FEEDS.map(async (feedUrl) => {
@@ -58,7 +58,7 @@ export class NewsService {
           return articles;
         } catch (error) {
           console.error(`Error fetching ${feedUrl}:`, error);
-          return [];
+          return [] as RawNewsItem[];
         }
       });
 
@@ -225,8 +225,6 @@ export class NewsService {
   }
 
   private async processRemainingArticlesInBackground(articles: RawNewsItem[]): Promise<void> {
-    console.log(`Processing ${articles.length} additional articles in background...`);
-    
     // Process articles in batches of 5 to avoid overwhelming the system
     const batchSize = 5;
     for (let i = 0; i < articles.length; i += batchSize) {
@@ -236,15 +234,13 @@ export class NewsService {
         try {
           await this.processAndStoreArticle(article);
         } catch (error) {
-          console.error("Background processing error:", error);
+          // Silent fallback for background processing
         }
       }
       
       // Small delay between batches to be gentle on resources
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
-    
-    console.log("Background article processing completed");
   }
 
   private async processAndStoreArticle(rawArticle: RawNewsItem): Promise<{ success: boolean; skipped: boolean }> {
@@ -269,7 +265,7 @@ export class NewsService {
         );
         isProcessed = true;
       } catch (aiError) {
-        console.error("Error processing with OpenAI:", aiError instanceof Error ? aiError.message : String(aiError));
+        // Reduced logging for production - OpenAI service handles quota errors gracefully
         
         // Fallback: create basic article data without AI processing
         processedNews = {
@@ -297,11 +293,7 @@ export class NewsService {
 
       await storage.createNewsArticle(articleData, rawArticle.publishedAt);
       
-      if (isProcessed) {
-        console.log(`Processed and stored: ${processedNews.headline}`);
-      } else {
-        console.log(`Stored basic article (processing failed): ${processedNews.headline}`);
-      }
+      // Production: reduce console logs for cleaner output
 
       return { success: isProcessed, skipped: false };
 

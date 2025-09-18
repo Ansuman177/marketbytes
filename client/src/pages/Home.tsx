@@ -63,15 +63,18 @@ export default function Home() {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center">
-            <p className="text-destructive mb-4" data-testid="text-error">
-              Failed to load news articles
+          <div className="text-center max-w-md mx-auto px-4">
+            <div className="text-6xl mb-4">📰</div>
+            <h2 className="text-xl font-semibold mb-2">Unable to Load News</h2>
+            <p className="text-muted-foreground mb-4" data-testid="text-error">
+              We're having trouble fetching the latest market news. Please check your connection and try again.
             </p>
             <Button 
               onClick={() => window.location.reload()}
               data-testid="button-retry"
+              className="w-full"
             >
-              Retry
+              Refresh News
             </Button>
           </div>
         </div>

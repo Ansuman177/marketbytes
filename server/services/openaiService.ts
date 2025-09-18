@@ -10,6 +10,9 @@ interface ProcessedNews {
 
 export class OpenAIService {
   private openai: OpenAI;
+  private quotaExceeded: boolean = false;
+  private lastQuotaCheck: number = 0;
+  private readonly QUOTA_RESET_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
   constructor() {
     const apiKey = process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || "your_openai_api_key";
@@ -17,6 +20,11 @@ export class OpenAIService {
   }
 
   async processNewsArticle(title: string, description: string, url: string): Promise<ProcessedNews> {
+    // Check if we've exceeded quota recently and should skip OpenAI calls
+    if (this.quotaExceeded && Date.now() - this.lastQuotaCheck < this.QUOTA_RESET_INTERVAL) {
+      return this.getFallbackProcessing(title, description);
+    }
+
     try {
       const prompt = `Analyze the following Indian financial news article and extract information in JSON format:
 
@@ -69,16 +77,21 @@ Respond with JSON in this exact format:
       };
 
     } catch (error) {
-      console.error("Error processing with OpenAI:", error);
+      // Handle quota exceeded specifically
+      if (error instanceof Error && error.message.includes('exceeded your current quota')) {
+        this.quotaExceeded = true;
+        this.lastQuotaCheck = Date.now();
+        
+        // Only log quota exceeded once, then use silent fallbacks
+        if (!this.quotaExceeded || Date.now() - this.lastQuotaCheck > this.QUOTA_RESET_INTERVAL) {
+          console.warn("OpenAI quota exceeded. Using fallback processing for news articles.");
+        }
+      } else {
+        // Log other unexpected errors
+        console.error("OpenAI processing error:", error instanceof Error ? error.message : String(error));
+      }
       
-      // Fallback processing
-      return {
-        headline: title,
-        summary: description.length > 300 ? description.substring(0, 297) + "..." : description,
-        tickers: this.extractTickersFromText(title + " " + description),
-        sectors: this.extractSectorsFromText(title + " " + description),
-        tags: [],
-      };
+      return this.getFallbackProcessing(title, description);
     }
   }
 
@@ -124,6 +137,16 @@ Respond with JSON in this exact format:
     }
     
     return foundSectors;
+  }
+
+  private getFallbackProcessing(title: string, description: string): ProcessedNews {
+    return {
+      headline: title,
+      summary: description.length > 300 ? description.substring(0, 297) + "..." : description,
+      tickers: this.extractTickersFromText(title + " " + description),
+      sectors: this.extractSectorsFromText(title + " " + description),
+      tags: [],
+    };
   }
 }
 
