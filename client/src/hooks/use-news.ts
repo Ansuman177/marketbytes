@@ -65,11 +65,13 @@ export function useRefreshNews() {
       }
     },
     onSuccess: (data) => {
+      console.log("Refresh success with data:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/news"] });
       
       // Show success toast with details
       if (data.stats) {
         const { fetched, processed, failed } = data.stats;
+        console.log("Showing toast with stats:", { fetched, processed, failed });
         
         if (failed > 0) {
           // Mixed results - some articles had issues
@@ -95,6 +97,7 @@ export function useRefreshNews() {
         }
       } else {
         // Fallback message
+        console.log("Showing fallback toast with message:", data.message);
         toast({
           title: "News Refreshed",
           description: data.message || "News feed updated successfully.",
@@ -103,6 +106,7 @@ export function useRefreshNews() {
       }
     },
     onError: (error: Error) => {
+      console.log("Refresh error:", error);
       // Show error toast
       toast({
         title: "Refresh Failed",
