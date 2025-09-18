@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNews, useRefreshNews } from "@/hooks/use-news";
 import Header from "@/components/Header";
 import MarketSummary from "@/components/MarketSummary";
+import NewsCard from "@/components/NewsCard";
 import SwipeableNewsCard from "@/components/SwipeableNewsCard";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Skeleton } from "@/components/ui/skeleton";
