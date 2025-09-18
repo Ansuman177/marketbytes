@@ -37,6 +37,7 @@ export function useRefreshNews() {
   return useMutation({
     mutationFn: async () => {
       const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
       try {
         const response = await fetch('/api/news/refresh', { 
@@ -47,6 +48,7 @@ export function useRefreshNews() {
           },
         });
         
+        clearTimeout(timeoutId);
         const data = await response.json();
         
         if (!response.ok) {
@@ -55,8 +57,9 @@ export function useRefreshNews() {
         
         return data;
       } catch (error) {
+        clearTimeout(timeoutId);
         if (error instanceof Error && error.name === 'AbortError') {
-          throw new Error('Refresh was cancelled');
+          throw new Error('Refresh is taking longer than expected - please try again in a moment');
         }
         throw error;
       }

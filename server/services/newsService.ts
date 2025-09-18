@@ -50,33 +50,27 @@ export class NewsService {
       let processed = 0;
       let failed = 0;
       
-      // Process articles in smaller batches to avoid timeouts
-      const BATCH_SIZE = 10;
-      const articles = data.articles;
+      // Process only first 3 articles immediately for quick response
+      const quickBatch = data.articles.slice(0, 3);
       
-      for (let i = 0; i < articles.length; i += BATCH_SIZE) {
-        const batch = articles.slice(i, i + BATCH_SIZE);
-        console.log(`Processing batch ${Math.floor(i/BATCH_SIZE) + 1}/${Math.ceil(articles.length/BATCH_SIZE)} (${batch.length} articles)`);
-        
-        for (const article of batch) {
-          const result = await this.processAndStoreArticle(article);
-          if (result.success) {
-            processed++;
-          } else if (result.skipped) {
-            // Don't count skipped articles as failures
-          } else {
-            failed++;
-          }
+      for (const article of quickBatch) {
+        const result = await this.processAndStoreArticle(article);
+        if (result.success) {
+          processed++;
+        } else if (result.skipped) {
+          // Don't count skipped articles as failures
+        } else {
+          failed++;
         }
-        
-        // Add a small delay between batches to avoid overwhelming OpenAI
-        if (i + BATCH_SIZE < articles.length) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
+      }
+      
+      // Process remaining articles in background (don't await)
+      if (data.articles.length > 3) {
+        this.processRemainingArticlesInBackground(data.articles.slice(3));
       }
 
       const fetched = data.articles.length;
-      const successMessage = `Fetched ${fetched} articles. Processed ${processed} new articles successfully.${failed > 0 ? ` ${failed} articles had processing issues but basic data was still saved.` : ''}`;
+      const successMessage = `Processing ${fetched} articles. ${processed + failed} ready now, others processing in background.`;
       
       return {
         success: true,
@@ -92,6 +86,29 @@ export class NewsService {
         stats: { fetched: 0, processed: 0, failed: 0 }
       };
     }
+  }
+
+  private async processRemainingArticlesInBackground(articles: RawNewsItem[]): Promise<void> {
+    console.log(`Processing ${articles.length} additional articles in background...`);
+    
+    // Process articles in batches of 5 to avoid overwhelming the system
+    const batchSize = 5;
+    for (let i = 0; i < articles.length; i += batchSize) {
+      const batch = articles.slice(i, i + batchSize);
+      
+      for (const article of batch) {
+        try {
+          await this.processAndStoreArticle(article);
+        } catch (error) {
+          console.error("Background processing error:", error);
+        }
+      }
+      
+      // Small delay between batches to be gentle on resources
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
+    console.log("Background article processing completed");
   }
 
   private async processAndStoreArticle(rawArticle: RawNewsItem): Promise<{ success: boolean; skipped: boolean }> {
