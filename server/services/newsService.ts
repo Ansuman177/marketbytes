@@ -21,36 +21,30 @@ interface ProcessedNews {
 }
 
 export class NewsService {
-  // Comprehensive RSS Feed URLs for real-time Indian financial news
+  // Reliable RSS Feed URLs for real-time Indian financial news
   private readonly RSS_FEEDS = [
-    // Google News Feeds - Real-time market updates
+    // Google News Feeds - Real-time market updates (Working reliably)
     "https://news.google.com/rss/search?q=india+stock+market&hl=en-IN&gl=IN&ceid=IN:en",
     "https://news.google.com/rss/search?q=NSE+OR+BSE+OR+sensex+OR+nifty&hl=en-IN&gl=IN&ceid=IN:en",
     "https://news.google.com/rss/search?q=quarterly+results+india&hl=en-IN&gl=IN&ceid=IN:en",
     "https://news.google.com/rss/search?q=IPO+india&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=indian+companies+earnings&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=mutual+funds+india&hl=en-IN&gl=IN&ceid=IN:en",
     
-    // Economic Times - Market specific feeds
+    // Economic Times - Market specific feeds (Working reliably)
     "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
     "https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms", 
-    "https://economictimes.indiatimes.com/markets/ipos/fpos/rssfeeds/82519826.cms",
     "https://economictimes.indiatimes.com/markets/commodities/rssfeeds/1808152121.cms",
-    "https://economictimes.indiatimes.com/markets/forex/rssfeeds/1808152122.cms",
     
-    // MoneyControl - Comprehensive market coverage
-    "https://www.moneycontrol.com/rss/latestnews.xml",
-    "https://www.moneycontrol.com/rss/business.xml",
-    "https://www.moneycontrol.com/rss/marketedge.xml",
-    "https://www.moneycontrol.com/rss/results.xml",
-    "https://www.moneycontrol.com/rss/technicals.xml",
+    // Financial Express - Additional reliable source
+    "https://www.financialexpress.com/market/feed/",
     
-    // Business Standard - Corporate news
-    "https://www.business-standard.com/rss/markets-106.rss",
-    "https://www.business-standard.com/rss/companies-101.rss",
-    "https://www.business-standard.com/rss/finance-103.rss",
+    // Livemint - Business news
+    "https://www.livemint.com/rss/markets",
+    "https://www.livemint.com/rss/companies",
     
-    // Reuters - International perspective
-    "https://feeds.reuters.com/reuters/INbusinessNews",
-    "https://feeds.reuters.com/reuters/INmarketNews"
+    // Times of India Business
+    "https://timesofindia.indiatimes.com/rssfeeds/1898055.cms"
   ];
 
   async fetchLatestNews(): Promise<{ success: boolean; message: string; stats: { fetched: number; processed: number; failed: number } }> {
@@ -64,7 +58,7 @@ export class NewsService {
         try {
           console.log(`Fetching from: ${feedUrl}`);
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+          const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout for better reliability
           
           const response = await fetch(feedUrl, { signal: controller.signal });
           clearTimeout(timeoutId);
