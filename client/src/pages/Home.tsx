@@ -5,6 +5,7 @@ import MarketSummary from "@/components/MarketSummary";
 import NewsCard from "@/components/NewsCard";
 import SwipeableNewsCard from "@/components/SwipeableNewsCard";
 import BottomNavigation from "@/components/BottomNavigation";
+import DisclaimerPopup from "@/components/DisclaimerPopup";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Menu, ArrowUp, ArrowDown } from "lucide-react";
@@ -19,6 +20,7 @@ export default function Home() {
   const refreshNews = useRefreshNews();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showTraditionalView, setShowTraditionalView] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(true);
 
   const allArticles = Array.isArray(data) ? data : [];
 
@@ -37,6 +39,11 @@ export default function Home() {
   if (error) {
     return (
       <div className="min-h-screen bg-background">
+        {/* Disclaimer Popup */}
+        <DisclaimerPopup 
+          isOpen={showDisclaimer} 
+          onClose={() => setShowDisclaimer(false)} 
+        />
         <Header />
         <div className="flex items-center justify-center min-h-[50vh]">
           <div className="text-center max-w-md mx-auto px-4">
@@ -62,6 +69,11 @@ export default function Home() {
   if (showTraditionalView) {
     return (
       <div className="min-h-screen bg-background">
+        {/* Disclaimer Popup */}
+        <DisclaimerPopup 
+          isOpen={showDisclaimer} 
+          onClose={() => setShowDisclaimer(false)} 
+        />
         <Header />
         <main className="pb-20">
           <MarketSummary />
@@ -143,6 +155,11 @@ export default function Home() {
   // Inshorts-like card view
   return (
     <div className="min-h-screen bg-background relative">
+      {/* Disclaimer Popup */}
+      <DisclaimerPopup 
+        isOpen={showDisclaimer} 
+        onClose={() => setShowDisclaimer(false)} 
+      />
       {/* Floating controls */}
       <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
         <Button 
