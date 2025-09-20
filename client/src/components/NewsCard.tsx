@@ -21,9 +21,6 @@ function formatTimeAgo(timestamp: Date): string {
 }
 
 export default function NewsCard({ article }: NewsCardProps) {
-  const handleReadMore = () => {
-    window.open(article.sourceUrl, '_blank', 'noopener,noreferrer');
-  };
 
   return (
     <article 
@@ -76,19 +73,12 @@ export default function NewsCard({ article }: NewsCardProps) {
             ))}
           </div>
           
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center justify-center text-xs text-muted-foreground">
             <div className="flex items-center space-x-3">
               <span data-testid={`text-source-${article.id}`}>{article.source}</span>
               <span>•</span>
               <span data-testid={`text-time-${article.id}`}>{formatTimeAgo(article.timestamp)}</span>
             </div>
-            <button 
-              onClick={handleReadMore}
-              className="text-primary hover:text-primary/80 font-medium transition-colors"
-              data-testid={`button-read-more-${article.id}`}
-            >
-              Read Full Story
-            </button>
           </div>
         </div>
       </div>

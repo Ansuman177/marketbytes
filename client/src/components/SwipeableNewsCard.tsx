@@ -59,9 +59,6 @@ export default function SwipeableNewsCard({
     }
   };
 
-  const handleReadMore = () => {
-    window.open(article.sourceUrl, '_blank', 'noopener,noreferrer');
-  };
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -92,14 +89,6 @@ export default function SwipeableNewsCard({
       onTouchEnd={onTouchEnd}
       data-testid={`swipeable-card-${article.id}`}
     >
-      {/* Header with navigation indicators */}
-      <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/20 to-transparent p-4 pt-safe">
-        <div className="flex justify-center mb-2">
-          <div className="text-xs text-white/70 bg-black/30 px-3 py-1 rounded-full">
-            Swipe up for next • Swipe down for previous
-          </div>
-        </div>
-      </div>
 
       {/* Content section */}
       <div className="flex-1 px-6 py-8 overflow-y-auto">
@@ -113,7 +102,7 @@ export default function SwipeableNewsCard({
           </span>
         </div>
         <h1 
-          className="text-3xl font-bold text-foreground mb-4 leading-tight"
+          className="text-2xl font-bold text-foreground mb-4 leading-tight"
           data-testid={`text-headline-hero-${article.id}`}
         >
           {article.headline}
@@ -228,23 +217,8 @@ export default function SwipeableNewsCard({
           </div>
         )}
 
-        {/* Read more button */}
-        <button 
-          onClick={handleReadMore}
-          className="w-full bg-primary text-primary-foreground py-4 px-6 rounded-lg font-medium text-lg hover:bg-primary/90 transition-colors"
-          data-testid={`button-read-more-hero-${article.id}`}
-        >
-          📰 Read Full Story
-        </button>
       </div>
 
-      {/* Bottom navigation hint */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-        <div className="flex flex-col items-center text-muted-foreground">
-          <div className="text-sm mb-1 font-medium">👆 Swipe up for next story</div>
-          <div className="w-8 h-1 bg-muted-foreground/40 rounded-full" />
-        </div>
-      </div>
     </div>
   );
 }
