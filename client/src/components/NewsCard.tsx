@@ -30,16 +30,7 @@ export default function NewsCard({ article }: NewsCardProps) {
       className="news-card bg-card rounded-lg p-4 card-shadow fade-in"
       data-testid={`card-article-${article.id}`}
     >
-      <div className="flex items-start space-x-3">
-        {article.imageUrl && (
-          <img 
-            src={article.imageUrl}
-            alt="Article illustration" 
-            className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-            data-testid={`img-article-${article.id}`}
-          />
-        )}
-        
+      <div className="w-full">
         <div className="flex-1 min-w-0">
           <h2 
             className="text-lg font-semibold text-foreground mb-2 leading-tight"

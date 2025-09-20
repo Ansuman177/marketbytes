@@ -4,13 +4,9 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 export function useNews() {
-  return useInfiniteQuery({
+  return useQuery({
     queryKey: ["/api/news"],
-    queryFn: ({ pageParam = 0 }) => api.getNews(20, pageParam * 20),
-    getNextPageParam: (lastPage, allPages) => {
-      return lastPage.length === 20 ? allPages.length : undefined;
-    },
-    initialPageParam: 0,
+    queryFn: () => api.getNews(50, 0), // Fetch 50 latest articles
     refetchInterval: 60000, // Refetch every minute
   });
 }

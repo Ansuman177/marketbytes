@@ -12,9 +12,6 @@ import { RefreshCw, Menu, ArrowUp, ArrowDown } from "lucide-react";
 export default function Home() {
   const {
     data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
     isLoading,
     error,
   } = useNews();
@@ -23,32 +20,11 @@ export default function Home() {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showTraditionalView, setShowTraditionalView] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop >=
-        document.documentElement.offsetHeight - 1000 &&
-        hasNextPage &&
-        !isFetchingNextPage
-      ) {
-        fetchNextPage();
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-  const allArticles = data?.pages.flat() || [];
+  const allArticles = Array.isArray(data) ? data : [];
 
   const handleSwipeUp = () => {
     if (currentCardIndex < allArticles.length - 1) {
       setCurrentCardIndex(currentCardIndex + 1);
-      
-      // Auto-fetch more articles when nearing the end
-      if (currentCardIndex >= allArticles.length - 3 && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      }
     }
   };
 
@@ -156,14 +132,6 @@ export default function Home() {
               ))
             )}
 
-            {isFetchingNextPage && (
-              <div className="text-center py-6">
-                <div className="flex items-center justify-center space-x-2 text-muted-foreground">
-                  <div className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-sm" data-testid="text-loading">Loading more news...</span>
-                </div>
-              </div>
-            )}
           </div>
         </main>
 
@@ -259,11 +227,6 @@ export default function Home() {
         ))
       )}
 
-      {isFetchingNextPage && (
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-background/80 backdrop-blur-sm rounded-full px-4 py-2 text-sm text-muted-foreground">
-          Loading more stories...
-        </div>
-      )}
     </div>
   );
 }
