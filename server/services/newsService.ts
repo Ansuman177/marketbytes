@@ -315,7 +315,7 @@ export class NewsService {
       
       // Production: reduce console logs for cleaner output
 
-      return { success: isProcessed, skipped: false };
+      return { success: true, skipped: false }; // Successfully stored regardless of AI processing
 
     } catch (error) {
       console.error("Error processing article:", error);
