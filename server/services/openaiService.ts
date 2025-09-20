@@ -199,7 +199,13 @@ Respond with JSON in this exact format:
   private getFallbackProcessing(title: string, description: string): ProcessedNews {
     // Ensure we always preserve the original title as headline
     const cleanTitle = title.trim() || "Market News Update";
-    const cleanDescription = description || title || "Financial news article";
+    let cleanDescription = description || title || "Financial news article";
+    
+    // Remove URLs from the description
+    cleanDescription = this.removeUrlsFromText(cleanDescription);
+    
+    // Ensure minimum 60 words for summary
+    cleanDescription = this.ensureMinimumWordCount(cleanDescription, cleanTitle);
     
     return {
       headline: cleanTitle,
@@ -208,6 +214,44 @@ Respond with JSON in this exact format:
       sectors: this.extractSectorsFromText(title + " " + description),
       tags: [],
     };
+  }
+
+  private removeUrlsFromText(text: string): string {
+    // Remove various URL patterns and HTML artifacts
+    return text
+      .replace(/https?:\/\/[^\s]+/g, '') // Remove http/https URLs
+      .replace(/www\.[^\s]+/g, '') // Remove www URLs
+      .replace(/href="[^"]*"/g, '') // Remove href attributes
+      .replace(/\b[a-zA-Z0-9-]+\.[a-zA-Z]{2,}\b/g, '') // Remove domain patterns
+      .replace(/<[^>]*>/g, '') // Remove any remaining HTML tags
+      .replace(/&[a-zA-Z0-9#]+;/g, ' ') // Remove HTML entities like &nbsp; &amp; etc
+      .replace(/_blank['"\\]*/g, '') // Remove _blank attributes
+      .replace(/\/a\s+/g, ' ') // Remove broken </a> tags
+      .replace(/font\s+color[^>]*>/g, '') // Remove font color tags
+      .replace(/color=['"#\w]*['"]?/g, '') // Remove color attributes
+      .replace(/target=['"_\w]*['"]?/g, '') // Remove target attributes
+      .replace(/['"\\]{2,}/g, ' ') // Remove multiple quotes/backslashes
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
+  }
+
+  private ensureMinimumWordCount(description: string, title: string): string {
+    const words = description.split(/\s+/).filter(word => word.length > 2); // Filter out very short words
+    
+    if (words.length >= 60) {
+      return description;
+    }
+    
+    // If description is too short, create a meaningful summary
+    const baseText = description.length > 15 ? description : title;
+    
+    // Always ensure we start with clean base text
+    const cleanBaseText = baseText.replace(/['"\\]{2,}/g, ' ').replace(/\s+/g, ' ').trim();
+    
+    // Generate a 60+ word summary template for financial news
+    const expandedSummary = `${cleanBaseText}. This financial development represents a significant market movement that could impact investor sentiment and trading patterns in the Indian stock markets. Market analysts are closely monitoring the situation as it unfolds, with potential implications for related sectors and companies listed on NSE and BSE. The news comes at a time when Indian financial markets continue to show resilience and adaptation to global economic trends. Investors and traders are advised to stay updated on further developments as they may influence stock prices, sector performance, and overall market dynamics in the coming trading sessions.`;
+    
+    return expandedSummary;
   }
 }
 

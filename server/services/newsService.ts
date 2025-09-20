@@ -186,7 +186,18 @@ export class NewsService {
   }
 
   private cleanHtmlTags(text: string): string {
-    return text.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim();
+    return text
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .replace(/&[a-zA-Z0-9#]+;/g, ' ') // Remove HTML entities like &nbsp; &amp; etc
+      .replace(/_blank['"\\]*/g, '') // Remove _blank attributes
+      .replace(/\/a\s+/g, ' ') // Remove broken </a> tags
+      .replace(/font\s+color[^>]*>/g, '') // Remove font color tags
+      .replace(/color=['"#\w]*['"]?/g, '') // Remove color attributes
+      .replace(/target=['"_\w]*['"]?/g, '') // Remove target attributes
+      .replace(/href=['"]*[^'"]*['"]*/g, '') // Remove href attributes
+      .replace(/['"\\]{2,}/g, ' ') // Remove multiple quotes/backslashes
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
   }
 
   private extractGoogleNewsUrl(googleUrl: string): string {
