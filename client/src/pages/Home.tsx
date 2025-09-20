@@ -19,7 +19,7 @@ export default function Home() {
   
   const refreshNews = useRefreshNews();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [showTraditionalView, setShowTraditionalView] = useState(false);
+  const [showTraditionalView, setShowTraditionalView] = useState(true);
   const [showDisclaimer, setShowDisclaimer] = useState(true);
 
   const allArticles = Array.isArray(data) ? data : [];
@@ -169,7 +169,8 @@ export default function Home() {
           className="bg-background/80 backdrop-blur-sm"
           data-testid="button-list-view"
         >
-          <Menu className="h-4 w-4" />
+          <Menu className="h-4 w-4 mr-2" />
+          List View
         </Button>
         <Button 
           variant="outline" 
