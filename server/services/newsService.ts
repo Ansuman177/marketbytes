@@ -203,14 +203,28 @@ export class NewsService {
 
   private cleanHtmlTags(text: string): string {
     return text
-      .replace(/<[^>]*>/g, '') // Remove HTML tags
-      .replace(/&[a-zA-Z0-9#]+;/g, ' ') // Remove HTML entities like &nbsp; &amp; etc
-      .replace(/_blank['"\\]*/g, '') // Remove _blank attributes
-      .replace(/\/a\s+/g, ' ') // Remove broken </a> tags
-      .replace(/font\s+color[^>]*>/g, '') // Remove font color tags
-      .replace(/color=['"#\w]*['"]?/g, '') // Remove color attributes
-      .replace(/target=['"_\w]*['"]?/g, '') // Remove target attributes
-      .replace(/href=['"]*[^'"]*['"]*/g, '') // Remove href attributes
+      // Remove complete HTML tags first
+      .replace(/<[^>]*>/g, '') 
+      // Remove incomplete img tags that might be cut off
+      .replace(/img\s+[^>]*border\s*=\s*['"]\d+['"][^>]*/gi, '')
+      .replace(/img\s+[^>]*src\s*=\s*['"]/gi, '')
+      .replace(/img\s+[^>]*hspace\s*=\s*['"]\d+['"][^>]*/gi, '')
+      .replace(/img\s+[^>]*align\s*=\s*['"][^'"]*['"][^>]*/gi, '')
+      .replace(/img\s+[^>]*style\s*=\s*['"][^'"]*['"][^>]*/gi, '')
+      .replace(/img\s+[^>]*/gi, '') // Remove any remaining img fragments
+      // Remove HTML entities
+      .replace(/&[a-zA-Z0-9#]+;/g, ' ') 
+      // Remove broken HTML attributes that might remain
+      .replace(/border\s*=\s*['"]\d+['"]?\s*/gi, '')
+      .replace(/hspace\s*=\s*['"]\d+['"]?\s*/gi, '')
+      .replace(/align\s*=\s*['"][^'"]*['"]?\s*/gi, '')
+      .replace(/style\s*=\s*['"][^'"]*['"]?\s*/gi, '')
+      .replace(/src\s*=\s*['"][^'"]*['"]?\s*/gi, '')
+      .replace(/target\s*=\s*['"][^'"]*['"]?\s*/gi, '')
+      .replace(/href\s*=\s*['"][^'"]*['"]?\s*/gi, '')
+      .replace(/_blank['"\\]*/g, '') 
+      .replace(/\/a\s+/g, ' ') 
+      .replace(/font\s+color[^>]*>/g, '') 
       .replace(/['"\\]{2,}/g, ' ') // Remove multiple quotes/backslashes
       .replace(/\s+/g, ' ') // Normalize whitespace
       .trim();
