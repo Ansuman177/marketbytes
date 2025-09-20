@@ -33,7 +33,7 @@ Description: ${description}
 
 Please provide:
 1. A compelling, concise headline (max 80 characters)
-2. A neutral, easy-to-read summary (exactly 60 words)
+2. A neutral, easy-to-read summary (35-40 words, optimized for mobile with images)
 3. Relevant Indian stock tickers (format as array of strings like ["RELIANCE", "TCS", "HDFCBANK"])
 4. Relevant sectors (like ["IT Services", "Banking", "Energy", "Pharma", "Automotive"])
 5. Key topic tags (like ["Earnings", "Merger", "RBI Policy", "FDA Approval", "Contract Win"])
@@ -204,8 +204,8 @@ Respond with JSON in this exact format:
     // Remove URLs from the description
     cleanDescription = this.removeUrlsFromText(cleanDescription);
     
-    // Ensure minimum 60 words for summary
-    cleanDescription = this.ensureMinimumWordCount(cleanDescription, cleanTitle);
+    // Ensure optimal word count for mobile layout with images (25-40 words)
+    cleanDescription = this.ensureOptimalWordCount(cleanDescription, cleanTitle);
     
     return {
       headline: cleanTitle,
@@ -235,21 +235,33 @@ Respond with JSON in this exact format:
       .trim();
   }
 
-  private ensureMinimumWordCount(description: string, title: string): string {
+  private ensureOptimalWordCount(description: string, title: string): string {
     const words = description.split(/\s+/).filter(word => word.length > 2); // Filter out very short words
     
-    if (words.length >= 60) {
+    // If already in optimal range (25-40 words), return as is
+    if (words.length >= 25 && words.length <= 40) {
       return description;
     }
     
-    // If description is too short, create a meaningful summary
+    // If too long, trim to 40 words
+    if (words.length > 40) {
+      return words.slice(0, 40).join(' ') + '...';
+    }
+    
+    // If too short, create a concise but meaningful summary
     const baseText = description.length > 15 ? description : title;
     
     // Always ensure we start with clean base text
     const cleanBaseText = baseText.replace(/['"\\]{2,}/g, ' ').replace(/\s+/g, ' ').trim();
     
-    // Generate a 60+ word summary template for financial news
-    const expandedSummary = `${cleanBaseText}. This financial development represents a significant market movement that could impact investor sentiment and trading patterns in the Indian stock markets. Market analysts are closely monitoring the situation as it unfolds, with potential implications for related sectors and companies listed on NSE and BSE. The news comes at a time when Indian financial markets continue to show resilience and adaptation to global economic trends. Investors and traders are advised to stay updated on further developments as they may influence stock prices, sector performance, and overall market dynamics in the coming trading sessions.`;
+    // Generate a 25-35 word summary optimized for mobile display with images
+    const expandedSummary = `${cleanBaseText}. This development could impact investor sentiment and trading patterns in Indian stock markets, with potential implications for related sectors and companies.`;
+    
+    // Ensure it's within our target range
+    const finalWords = expandedSummary.split(/\s+/).filter(word => word.length > 2);
+    if (finalWords.length > 40) {
+      return finalWords.slice(0, 35).join(' ') + '.';
+    }
     
     return expandedSummary;
   }
