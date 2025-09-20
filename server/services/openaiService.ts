@@ -96,23 +96,80 @@ Respond with JSON in this exact format:
   }
 
   private extractTickersFromText(text: string): string[] {
-    const indianStocks = [
-      "RELIANCE", "TCS", "HDFCBANK", "INFY", "HINDUNILVR", "ICICIBANK", "SBIN", "BHARTIARTL", 
-      "ITC", "KOTAKBANK", "LT", "ASIANPAINT", "AXISBANK", "MARUTI", "SUNPHARMA", "TITAN",
-      "ULTRACEMCO", "WIPRO", "NESTLEIND", "POWERGRID", "BAJFINANCE", "HCLTECH", "DRREDDY",
-      "TATAMOTORS", "ADANIPORTS", "INDUSINDBK", "BAJAJFINSV", "TECHM", "JSWSTEEL", "TATASTEEL"
-    ];
-
-    const foundTickers = [];
-    const upperText = text.toUpperCase();
+    const lowerText = text.toLowerCase();
+    const tickers = [];
     
-    for (const ticker of indianStocks) {
-      if (upperText.includes(ticker) || upperText.includes(`₹${ticker}`)) {
-        foundTickers.push(ticker);
+    // Enhanced Indian stock company name to ticker mapping
+    const companyToTicker: { [key: string]: string } = {
+      // IT Services
+      'tcs': 'TCS', 'tata consultancy': 'TCS', 'infosys': 'INFY', 'wipro': 'WIPRO', 
+      'hcl': 'HCLTECH', 'tech mahindra': 'TECHM', 'mindtree': 'MINDTREE',
+      
+      // Banking & Financial
+      'hdfc': 'HDFCBANK', 'icici': 'ICICIBANK', 'sbi': 'SBIN', 'state bank': 'SBIN',
+      'axis': 'AXISBANK', 'kotak': 'KOTAKBANK', 'yes bank': 'YESBANK', 'indusind': 'INDUSINDBK',
+      'bajaj finance': 'BAJFINANCE', 'lic': 'LICI',
+      
+      // Oil & Gas, Energy
+      'reliance': 'RELIANCE', 'ril': 'RELIANCE', 'ongc': 'ONGC', 'bpcl': 'BPCL', 'ioc': 'IOC',
+      'ntpc': 'NTPC', 'coal india': 'COALINDIA', 'power grid': 'POWERGRID',
+      
+      // Automobiles
+      'tata motors': 'TATAMOTORS', 'maruti': 'MARUTI', 'bajaj auto': 'BAJAJ-AUTO',
+      'hero motocorp': 'HEROMOTOCO', 'mahindra': 'M&M', 'eicher': 'EICHERMOT',
+      
+      // Consumer Goods
+      'itc': 'ITC', 'hindustan unilever': 'HINDUNILVR', 'hul': 'HINDUNILVR', 
+      'nestle': 'NESTLEIND', 'britannia': 'BRITANNIA', 'godrej': 'GODREJCP',
+      
+      // Metals
+      'tata steel': 'TATASTEEL', 'jsl': 'JSL', 'hindalco': 'HINDALCO', 'vedanta': 'VEDL',
+      'jsw steel': 'JSWSTEEL', 'sail': 'SAIL',
+      
+      // Pharma
+      'sun pharma': 'SUNPHARMA', 'dr reddy': 'DRREDDY', 'cipla': 'CIPLA', 'lupin': 'LUPIN',
+      'biocon': 'BIOCON', 'aurobindo': 'AUROPHARMA',
+      
+      // Telecom
+      'bharti airtel': 'BHARTIARTL', 'airtel': 'BHARTIARTL', 'vodafone idea': 'IDEA',
+      
+      // Cement
+      'ultratech': 'ULTRACEMCO', 'acc': 'ACC', 'ambuja': 'AMBUJACEM', 'grasim': 'GRASIM',
+      
+      // Adani Group
+      'adani enterprises': 'ADANIENT', 'adani ports': 'ADANIPORTS', 'adani power': 'ADANIPOWER',
+      'adani green': 'ADANIGREEN', 'adani transmission': 'ADANITRANS',
+      
+      // Other major stocks
+      'asian paints': 'ASIANPAINT', 'titan': 'TITAN', 'l&t': 'LT', 'larsen': 'LT',
+    };
+
+    // Check for company mentions
+    for (const [company, ticker] of Object.entries(companyToTicker)) {
+      if (lowerText.includes(company)) {
+        tickers.push(ticker);
       }
     }
     
-    return foundTickers;
+    // Also check for direct ticker mentions
+    const directTickers = [
+      "RELIANCE", "TCS", "HDFCBANK", "INFY", "HINDUNILVR", "ICICIBANK", "SBIN", "BHARTIARTL", 
+      "ITC", "KOTAKBANK", "LT", "ASIANPAINT", "AXISBANK", "MARUTI", "SUNPHARMA", "TITAN",
+      "ULTRACEMCO", "WIPRO", "NESTLEIND", "POWERGRID", "BAJFINANCE", "HCLTECH", "DRREDDY",
+      "TATAMOTORS", "ADANIPORTS", "INDUSINDBK", "BAJAJFINSV", "TECHM", "JSWSTEEL", "TATASTEEL",
+      "COALINDIA", "NTPC", "ONGC", "BPCL", "IOC", "M&M", "HEROMOTOCO", "EICHERMOT",
+      "BRITANNIA", "GODREJCP", "VEDL", "SAIL", "LUPIN", "BIOCON", "CIPLA", "AUROPHARMA",
+      "IDEA", "ACC", "AMBUJACEM", "GRASIM", "ADANIENT", "ADANIPOWER", "ADANIGREEN"
+    ];
+    
+    const upperText = text.toUpperCase();
+    for (const ticker of directTickers) {
+      if (upperText.includes(ticker) || upperText.includes(`₹${ticker}`)) {
+        tickers.push(ticker);
+      }
+    }
+    
+    return Array.from(new Set(tickers)).slice(0, 6); // Remove duplicates and limit to 6 for better UX
   }
 
   private extractSectorsFromText(text: string): string[] {
