@@ -33,7 +33,7 @@ Description: ${description}
 
 Please provide:
 1. A compelling, concise headline (max 80 characters)
-2. A neutral, easy-to-read summary (35-40 words, optimized for mobile with images)
+2. A neutral, easy-to-read summary (25-30 words, concise for mobile with images)
 3. Relevant Indian stock tickers (format as array of strings like ["RELIANCE", "TCS", "HDFCBANK"])
 4. Relevant sectors (like ["IT Services", "Banking", "Energy", "Pharma", "Automotive"])
 5. Key topic tags (like ["Earnings", "Merger", "RBI Policy", "FDA Approval", "Contract Win"])
@@ -209,7 +209,7 @@ Respond with JSON in this exact format:
     
     return {
       headline: cleanTitle,
-      summary: cleanDescription.length > 300 ? cleanDescription.substring(0, 297) + "..." : cleanDescription,
+      summary: cleanDescription.length > 150 ? cleanDescription.substring(0, 147) + "..." : cleanDescription,
       tickers: this.extractTickersFromText(title + " " + description),
       sectors: this.extractSectorsFromText(title + " " + description),
       tags: [],
@@ -236,16 +236,16 @@ Respond with JSON in this exact format:
   }
 
   private ensureOptimalWordCount(description: string, title: string): string {
-    const words = description.split(/\s+/).filter(word => word.length > 2); // Filter out very short words
+    const descWords = description.split(/\s+/).filter(word => word.length > 2); // Filter out very short words
     
-    // If already in optimal range (25-40 words), return as is
-    if (words.length >= 25 && words.length <= 40) {
+    // If already in optimal range (25-30 words), return as is
+    if (descWords.length >= 25 && descWords.length <= 30) {
       return description;
     }
     
-    // If too long, trim to 40 words
-    if (words.length > 40) {
-      return words.slice(0, 40).join(' ') + '...';
+    // If too long, trim to 30 words
+    if (descWords.length > 30) {
+      return descWords.slice(0, 30).join(' ') + '...';
     }
     
     // If too short, create a concise but meaningful summary
@@ -254,16 +254,19 @@ Respond with JSON in this exact format:
     // Always ensure we start with clean base text
     const cleanBaseText = baseText.replace(/['"\\]{2,}/g, ' ').replace(/\s+/g, ' ').trim();
     
-    // Generate a 25-35 word summary optimized for mobile display with images
-    const expandedSummary = `${cleanBaseText}. This development could impact investor sentiment and trading patterns in Indian stock markets, with potential implications for related sectors and companies.`;
+    // Generate a concise summary for mobile display with images (25-30 words max)
+    const baseWords = cleanBaseText.split(/\s+/).filter(word => word.length > 2);
     
-    // Ensure it's within our target range
-    const finalWords = expandedSummary.split(/\s+/).filter(word => word.length > 2);
-    if (finalWords.length > 40) {
-      return finalWords.slice(0, 35).join(' ') + '.';
+    if (baseWords.length >= 25) {
+      // If we have enough words, just take first 30
+      return baseWords.slice(0, 30).join(' ') + '.';
     }
     
-    return expandedSummary;
+    // If too short, add minimal context but keep it concise
+    const shortSummary = `${cleanBaseText}. This development impacts Indian markets and investor sentiment.`;
+    const shortWords = shortSummary.split(/\s+/).filter(word => word.length > 2);
+    
+    return shortWords.slice(0, 30).join(' ') + '.';
   }
 }
 
