@@ -101,37 +101,17 @@ export default function SwipeableNewsCard({
         </div>
       </div>
 
-      {/* Hero image section */}
-      <div className="relative h-1/3 bg-gradient-to-br from-primary/20 to-secondary/20">
-        {article.imageUrl ? (
-          <img 
-            src={article.imageUrl}
-            alt="Article illustration" 
-            className="w-full h-full object-cover"
-            data-testid={`img-hero-${article.id}`}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/30 to-secondary/30">
-            <div className="text-6xl text-primary/50">📈</div>
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        
-        {/* Source and time overlay */}
-        <div className="absolute bottom-4 left-4 right-4">
-          <div className="flex items-center justify-between text-white text-sm">
-            <span data-testid={`text-source-hero-${article.id}`} className="font-medium">
-              {article.source}
-            </span>
-            <span data-testid={`text-time-hero-${article.id}`}>
-              {formatTimeAgo(article.timestamp)}
-            </span>
-          </div>
-        </div>
-      </div>
-
       {/* Content section */}
-      <div className="flex-1 px-6 py-6 overflow-y-auto">
+      <div className="flex-1 px-6 py-8 overflow-y-auto">
+        {/* Source and time */}
+        <div className="flex items-center justify-between text-muted-foreground text-sm mb-4">
+          <span data-testid={`text-source-hero-${article.id}`} className="font-medium">
+            {article.source}
+          </span>
+          <span data-testid={`text-time-hero-${article.id}`}>
+            {formatTimeAgo(article.timestamp)}
+          </span>
+        </div>
         <h1 
           className="text-2xl font-bold text-foreground mb-4 leading-tight"
           data-testid={`text-headline-hero-${article.id}`}
