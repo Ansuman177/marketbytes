@@ -90,6 +90,18 @@ export default function SwipeableNewsCard({
       data-testid={`swipeable-card-${article.id}`}
     >
 
+      {/* Hero Image */}
+      {article.imageUrl && (
+        <div className="w-full h-64 mb-6 rounded-lg overflow-hidden">
+          <img 
+            src={article.imageUrl} 
+            alt={article.headline}
+            className="w-full h-full object-cover"
+            data-testid={`image-hero-${article.id}`}
+          />
+        </div>
+      )}
+
       {/* Content section */}
       <div className="flex-1 px-6 py-8 overflow-y-auto">
         {/* Source and time */}

@@ -1,5 +1,6 @@
 import { storage } from "../storage";
 import { openaiService } from "./openaiService";
+import { imageService } from "./imageService";
 import type { InsertNewsArticle } from "@shared/schema";
 
 interface RawNewsItem {
@@ -309,12 +310,23 @@ export class NewsService {
         isProcessed = false;
       }
 
+      // Get relevant image for the article
+      let imageUrl = rawArticle.urlToImage || null;
+      try {
+        const relevantImage = await imageService.getNewsImage(processedNews.headline);
+        if (relevantImage) {
+          imageUrl = relevantImage;
+        }
+      } catch (imageError) {
+        console.log('Failed to fetch image, using fallback:', imageError instanceof Error ? imageError.message : String(imageError));
+      }
+
       // Store in database (either processed or basic version)
       const articleData: InsertNewsArticle = {
         headline: processedNews.headline,
         summary: processedNews.summary,
         sourceUrl: rawArticle.url,
-        imageUrl: rawArticle.urlToImage || null,
+        imageUrl: imageUrl,
         source: rawArticle.source.name,
         tags: processedNews.tags,
         tickers: processedNews.tickers,

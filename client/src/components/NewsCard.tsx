@@ -28,6 +28,18 @@ export default function NewsCard({ article }: NewsCardProps) {
       data-testid={`card-article-${article.id}`}
     >
       <div className="w-full">
+        {/* Article Image */}
+        {article.imageUrl && (
+          <div className="w-full h-48 mb-4 rounded-lg overflow-hidden">
+            <img 
+              src={article.imageUrl} 
+              alt={article.headline}
+              className="w-full h-full object-cover"
+              data-testid={`image-card-${article.id}`}
+            />
+          </div>
+        )}
+        
         <div className="flex-1 min-w-0">
           <h2 
             className="text-lg font-semibold text-foreground mb-2 leading-tight"
