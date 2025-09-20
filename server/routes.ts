@@ -6,8 +6,8 @@ import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  // Initialize with seed data
-  await newsService.seedInitialData();
+  // Fetch fresh news immediately instead of seeding old data
+  await newsService.fetchLatestNews();
 
   // Get latest news articles
   app.get("/api/news", async (req, res) => {

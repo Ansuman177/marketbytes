@@ -86,8 +86,8 @@ export class NewsService {
       let processed = 0;
       let failed = 0;
       
-      // Process only first 3 articles immediately for quick response  
-      const quickBatch = recentArticles.slice(0, 3);
+      // Process first 15 articles immediately for quick response with real-time content
+      const quickBatch = recentArticles.slice(0, 15);
       
       for (const article of quickBatch) {
         const result = await this.processAndStoreArticle(article);
@@ -101,12 +101,12 @@ export class NewsService {
       }
       
       // Process remaining articles in background (don't await)
-      if (recentArticles.length > 3) {
-        this.processRemainingArticlesInBackground(recentArticles.slice(3));
+      if (recentArticles.length > 15) {
+        this.processRemainingArticlesInBackground(recentArticles.slice(15));
       }
 
       const fetched = recentArticles.length;
-      const successMessage = `Processing ${fetched} articles from RSS feeds. ${processed + failed} ready now, others processing in background.`;
+      const successMessage = `Fetched ${fetched} fresh articles from RSS feeds. ${processed + failed} ready now, others processing in background.`;
       
       return {
         success: true,
@@ -143,9 +143,17 @@ export class NewsService {
           const cleanLink = link.includes('news.google.com') ? 
             this.extractGoogleNewsUrl(link) : link;
           
+          const cleanTitle = this.cleanHtmlTags(title);
+          const cleanDescription = this.cleanHtmlTags(description || title);
+          
+          // Debug logging to see what we're getting
+          if (!cleanTitle) {
+            console.log('DEBUG: Empty title found, raw title:', title);
+          }
+          
           articles.push({
-            title: this.cleanHtmlTags(title),
-            description: this.cleanHtmlTags(description || title),
+            title: cleanTitle || "Market News",
+            description: cleanDescription || "Financial news update",
             url: cleanLink,
             publishedAt: this.parseDate(pubDate),
             source: { name: this.getSourceName(feedUrl) }
@@ -162,7 +170,19 @@ export class NewsService {
   private extractXmlValue(xml: string, tag: string): string {
     const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i');
     const match = xml.match(regex);
-    return match ? match[1].trim() : '';
+    if (!match) return '';
+    
+    let content = match[1].trim();
+    
+    // Handle CDATA sections
+    if (content.includes('<![CDATA[')) {
+      const cdataMatch = content.match(/<!\[CDATA\[([\s\S]*?)\]\]>/);
+      if (cdataMatch) {
+        content = cdataMatch[1].trim();
+      }
+    }
+    
+    return content;
   }
 
   private cleanHtmlTags(text: string): string {
@@ -269,8 +289,8 @@ export class NewsService {
         
         // Fallback: create basic article data without AI processing
         processedNews = {
-          headline: rawArticle.title,
-          summary: rawArticle.description || "Article summary not available - processing will be retried later.",
+          headline: rawArticle.title || "Market News Update",
+          summary: rawArticle.description || rawArticle.title || "Financial news article",
           tags: [],
           tickers: [],
           sectors: []

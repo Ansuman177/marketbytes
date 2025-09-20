@@ -140,9 +140,13 @@ Respond with JSON in this exact format:
   }
 
   private getFallbackProcessing(title: string, description: string): ProcessedNews {
+    // Ensure we always preserve the original title as headline
+    const cleanTitle = title.trim() || "Market News Update";
+    const cleanDescription = description || title || "Financial news article";
+    
     return {
-      headline: title,
-      summary: description.length > 300 ? description.substring(0, 297) + "..." : description,
+      headline: cleanTitle,
+      summary: cleanDescription.length > 300 ? cleanDescription.substring(0, 297) + "..." : cleanDescription,
       tickers: this.extractTickersFromText(title + " " + description),
       sectors: this.extractSectorsFromText(title + " " + description),
       tags: [],
