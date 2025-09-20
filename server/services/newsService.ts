@@ -298,8 +298,8 @@ export class NewsService {
 
   private async processAndStoreArticle(rawArticle: RawNewsItem): Promise<{ success: boolean; skipped: boolean }> {
     try {
-      // Check if article already exists
-      const existingArticles = await storage.getNewsArticles();
+      // Check if article already exists (limit check to recent articles for performance)
+      const existingArticles = await storage.getNewsArticles(100, 0);
       const exists = existingArticles.some(existing => existing.sourceUrl === rawArticle.url);
       
       if (exists) {
