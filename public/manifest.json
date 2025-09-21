@@ -1,29 +1,47 @@
 {
   "short_name": "MarketBytes",
-  "name": "MarketBytes - Financial News",
-  "description": "Real-time Indian stock market news with AI analysis",
-  "icons": [
-    {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "logo192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
-  ],
-  "start_url": "./",
+  "name": "MarketBytes - Real-time Stock Market News",
+  "description": "Get bite-sized Indian stock market news with AI-powered analysis. Real-time NSE/BSE updates, company earnings, IPO news, and market insights.",
+  "scope": "/",
+  "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "theme_color": "#10b981",
   "background_color": "#111827",
   "categories": ["finance", "news", "business"],
-  "lang": "en",
-  "orientation": "portrait"
+  "lang": "en-IN",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo512.png",
+      "type": "image/png", 
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/mobile_view.png",
+      "type": "image/png",
+      "sizes": "360x640",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/desktop_view.png", 
+      "type": "image/png",
+      "sizes": "1920x1080",
+      "form_factor": "wide"
+    }
+  ],
+  "prefer_related_applications": false,
+  "display_override": ["window-controls-overlay", "standalone"],
+  "edge_side_panel": {
+    "preferred_width": 480
+  }
 }
