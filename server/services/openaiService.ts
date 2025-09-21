@@ -248,25 +248,15 @@ Respond with JSON in this exact format:
       return descWords.slice(0, 30).join(' ') + '...';
     }
     
-    // If too short, create a concise but meaningful summary
+    // If too short, use the original content without adding generic text
     const baseText = description.length > 15 ? description : title;
     
     // Always ensure we start with clean base text
     const cleanBaseText = baseText.replace(/['"\\]{2,}/g, ' ').replace(/\s+/g, ' ').trim();
     
-    // Generate a concise summary for mobile display with images (25-30 words max)
-    const baseWords = cleanBaseText.split(/\s+/).filter(word => word.length > 2);
-    
-    if (baseWords.length >= 25) {
-      // If we have enough words, just take first 30
-      return baseWords.slice(0, 30).join(' ') + '.';
-    }
-    
-    // If too short, add minimal context but keep it concise
-    const shortSummary = `${cleanBaseText}. This development impacts Indian markets and investor sentiment.`;
-    const shortWords = shortSummary.split(/\s+/).filter(word => word.length > 2);
-    
-    return shortWords.slice(0, 30).join(' ') + '.';
+    // Return the original content as-is, even if shorter than ideal
+    // This preserves the actual news content instead of adding generic boilerplate
+    return cleanBaseText;
   }
 }
 

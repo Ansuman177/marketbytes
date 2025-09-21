@@ -75,11 +75,8 @@ export class MemStorage implements IStorage {
       .replace(/\s+/g, ' ') // Normalize whitespace
       .trim();
 
-    // Ensure minimum word count at display time
-    const words = cleaned.split(/\s+/).filter(word => word.length > 2);
-    if (words.length < 60) {
-      cleaned = `${cleaned}. This financial development represents a significant market movement that could impact investor sentiment and trading patterns in the Indian stock markets. Market analysts are closely monitoring the situation as it unfolds, with potential implications for related sectors and companies listed on NSE and BSE. The news comes at a time when Indian financial markets continue to show resilience and adaptation to global economic trends.`;
-    }
+    // Keep original content without adding generic boilerplate
+    // We want to preserve the actual article content even if it's short
 
     return cleaned;
   }
