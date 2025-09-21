@@ -33,7 +33,7 @@ Description: ${description}
 
 Please provide:
 1. A compelling, concise headline (max 80 characters)
-2. A neutral, easy-to-read summary (25-30 words, concise for mobile with images)
+2. A detailed, informative summary (50-70 words) that explains the key points of the article, avoiding repetition of the headline
 3. Relevant Indian stock tickers (format as array of strings like ["RELIANCE", "TCS", "HDFCBANK"])
 4. Relevant sectors (like ["IT Services", "Banking", "Energy", "Pharma", "Automotive"])
 5. Key topic tags (like ["Earnings", "Merger", "RBI Policy", "FDA Approval", "Contract Win"])
@@ -204,12 +204,12 @@ Respond with JSON in this exact format:
     // Remove URLs from the description
     cleanDescription = this.removeUrlsFromText(cleanDescription);
     
-    // Ensure optimal word count for mobile layout with images (25-40 words)
-    cleanDescription = this.ensureOptimalWordCount(cleanDescription, cleanTitle);
+    // Create a detailed summary from the available content
+    cleanDescription = this.createDetailedSummary(cleanDescription, cleanTitle);
     
     return {
       headline: cleanTitle,
-      summary: cleanDescription.length > 150 ? cleanDescription.substring(0, 147) + "..." : cleanDescription,
+      summary: cleanDescription,
       tickers: this.extractTickersFromText(title + " " + description),
       sectors: this.extractSectorsFromText(title + " " + description),
       tags: [],
@@ -235,28 +235,38 @@ Respond with JSON in this exact format:
       .trim();
   }
 
-  private ensureOptimalWordCount(description: string, title: string): string {
-    const descWords = description.split(/\s+/).filter(word => word.length > 2); // Filter out very short words
+  private createDetailedSummary(description: string, title: string): string {
+    // Clean the content first
+    const cleanContent = description.replace(/['"\\]{2,}/g, ' ').replace(/\s+/g, ' ').trim();
+    const words = cleanContent.split(/\s+/).filter(word => word.length > 2);
     
-    // If already in optimal range (25-30 words), return as is
-    if (descWords.length >= 25 && descWords.length <= 30) {
-      return description;
+    // If we have enough words (50+), use them directly
+    if (words.length >= 50) {
+      // Take up to 80 words to keep it concise but informative
+      return words.slice(0, 80).join(' ') + (words.length > 80 ? '...' : '');
     }
     
-    // If too long, trim to 30 words
-    if (descWords.length > 30) {
-      return descWords.slice(0, 30).join(' ') + '...';
+    // If we have some content but less than 50 words, expand it thoughtfully
+    if (words.length >= 10) {
+      // Use the available content and expand with context if needed
+      let expandedSummary = cleanContent;
+      
+      // Add more context based on the content type
+      if (expandedSummary.includes('%') || expandedSummary.includes('gain') || expandedSummary.includes('up')) {
+        expandedSummary += '. The performance reflects broader market trends and investor sentiment in the Indian financial markets.';
+      } else if (expandedSummary.includes('IPO') || expandedSummary.includes('listing')) {
+        expandedSummary += '. This development is part of the ongoing activity in Indian capital markets with new companies seeking public investment.';
+      } else if (expandedSummary.includes('earnings') || expandedSummary.includes('results') || expandedSummary.includes('quarter')) {
+        expandedSummary += '. Quarterly results provide insights into company performance and future growth prospects for investors.';
+      } else {
+        expandedSummary += '. This development is significant for stakeholders and may impact related sectors in the Indian market.';
+      }
+      
+      return expandedSummary;
     }
     
-    // If too short, use the original content without adding generic text
-    const baseText = description.length > 15 ? description : title;
-    
-    // Always ensure we start with clean base text
-    const cleanBaseText = baseText.replace(/['"\\]{2,}/g, ' ').replace(/\s+/g, ' ').trim();
-    
-    // Return the original content as-is, even if shorter than ideal
-    // This preserves the actual news content instead of adding generic boilerplate
-    return cleanBaseText;
+    // If very little content, use the title and expand it meaningfully
+    return `${title}. This news development provides important information for investors and market participants following Indian financial markets and related sectors.`;
   }
 }
 

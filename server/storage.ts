@@ -93,9 +93,9 @@ export class MemStorage implements IStorage {
       timestamp: publishedAt ? new Date(publishedAt) : new Date(),
       isProcessed: insertArticle.isProcessed ?? true,
       imageUrl: insertArticle.imageUrl ?? null,
-      tags: insertArticle.tags ?? [],
-      tickers: insertArticle.tickers ?? [],
-      sectors: insertArticle.sectors ?? [],
+      tags: Array.isArray(insertArticle.tags) ? insertArticle.tags : [],
+      tickers: Array.isArray(insertArticle.tickers) ? insertArticle.tickers : [],
+      sectors: Array.isArray(insertArticle.sectors) ? insertArticle.sectors : [],
     };
     this.newsArticles.set(id, article);
     return article;
