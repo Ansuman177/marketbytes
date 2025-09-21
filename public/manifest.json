@@ -1,7 +1,8 @@
 {
   "short_name": "MarketBytes",
-  "name": "MarketBytes - Real-time Stock Market News",
+  "name": "MarketBytes - Real-time Stock Market News", 
   "description": "Get bite-sized Indian stock market news with AI-powered analysis. Real-time NSE/BSE updates, company earnings, IPO news, and market insights.",
+  "id": "/",
   "scope": "/",
   "start_url": "/",
   "display": "standalone",

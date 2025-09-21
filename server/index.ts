@@ -58,6 +58,11 @@ app.use((req, res, next) => {
     throw err;
   });
 
+  // Serve static files from public directory (manifest.json, icons, etc.)
+  // This must come before Vite middleware to ensure proper static file serving
+  const path = await import("path");
+  app.use(express.static(path.resolve(import.meta.dirname, "..", "public")));
+
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
