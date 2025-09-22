@@ -110,60 +110,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Market summary
   app.get("/api/market-summary", async (req, res) => {
     try {
-      // Fetch live market data from Yahoo Finance
-      const niftyResponse = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI');
-      const sensexResponse = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/%5EBSESN');
-      
-      const niftyData = await niftyResponse.json();
-      const sensexData = await sensexResponse.json();
-      
-      // Extract current values and changes
-      const niftyQuote = niftyData?.chart?.result?.[0]?.meta;
-      const sensexQuote = sensexData?.chart?.result?.[0]?.meta;
-      
-      const formatNumber = (num: number) => {
-        return new Intl.NumberFormat('en-IN').format(Math.round(num * 100) / 100);
-      };
-      
-      const formatChange = (change: number) => {
-        const sign = change >= 0 ? '+' : '';
-        return `${sign}${formatNumber(change)}`;
-      };
-      
-      const formatChangePercent = (changePercent: number) => {
-        const sign = changePercent >= 0 ? '+' : '';
-        return `${sign}${(changePercent).toFixed(2)}%`;
-      };
-      
-      // Calculate changes safely
-      const niftyPrice = niftyQuote?.regularMarketPrice ?? 25330;
-      const niftyPrevious = niftyQuote?.previousClose ?? 25239;
-      const niftyChange = niftyPrice - niftyPrevious;
-      const niftyChangePercent = (niftyChange / niftyPrevious) * 100;
-      
-      const sensexPrice = sensexQuote?.regularMarketPrice ?? 82876;
-      const sensexPrevious = sensexQuote?.previousClose ?? 82696;
-      const sensexChange = sensexPrice - sensexPrevious;
-      const sensexChangePercent = (sensexChange / sensexPrevious) * 100;
-      
-      const marketData = {
-        nifty50: {
-          value: formatNumber(niftyPrice),
-          change: formatChange(niftyChange),
-          changePercent: formatChangePercent(niftyChangePercent),
-          isPositive: niftyChange >= 0
-        },
-        sensex: {
-          value: formatNumber(sensexPrice),
-          change: formatChange(sensexChange),
-          changePercent: formatChangePercent(sensexChangePercent),
-          isPositive: sensexChange >= 0
-        },
-        marketStatus: "OPEN",
-        marketTime: "9:15 AM - 3:30 PM",
-        lastUpdated: new Date().toISOString()
-      };
-      
+      const { marketDataService } = await import("./services/marketDataService");
+      const marketData = await marketDataService.getMarketData();
       res.json(marketData);
     } catch (error) {
       console.error("Error fetching market summary:", error);

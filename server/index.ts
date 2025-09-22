@@ -39,6 +39,10 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
   
+  // Initialize real-time market data WebSocket service
+  const { marketDataService } = await import("./services/marketDataService");
+  marketDataService.initialize(server);
+  
   // Start periodic news fetching (every 5 minutes)
   const { newsService } = await import("./services/newsService");
   setInterval(async () => {

@@ -1,8 +1,13 @@
 import { useMarketSummary } from "@/hooks/use-news";
+import { useMarketWebSocket } from "@/hooks/use-market-websocket";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function MarketSummary() {
-  const { data: marketData, isLoading } = useMarketSummary();
+  const { data: fallbackData, isLoading } = useMarketSummary();
+  const { marketData: wsData, isConnected, error } = useMarketWebSocket();
+  
+  // Use WebSocket data if available, otherwise fall back to API data
+  const marketData = wsData || fallbackData;
 
   if (isLoading) {
     return (
@@ -46,6 +51,13 @@ export default function MarketSummary() {
         <div className="text-right">
           <p className="text-xs text-muted-foreground" data-testid="text-market-status">{marketData.marketStatus} Market</p>
           <p className="text-xs text-primary" data-testid="text-market-time">{marketData.marketTime}</p>
+          {/* Real-time connection indicator */}
+          <div className="flex items-center justify-end mt-1">
+            <div className={`w-2 h-2 rounded-full mr-1 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            <p className="text-xs text-muted-foreground" data-testid="text-connection-status">
+              {isConnected ? 'LIVE' : (error ? 'OFFLINE' : 'CONNECTING')}
+            </p>
+          </div>
         </div>
       </div>
     </div>

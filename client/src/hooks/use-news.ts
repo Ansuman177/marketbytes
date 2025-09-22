@@ -23,8 +23,8 @@ export function useMarketSummary() {
   return useQuery({
     queryKey: ["/api/market-summary"],
     queryFn: api.getMarketSummary,
-    refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
-    refetchIntervalInBackground: true, // Continue refetching when tab is not active
+    refetchInterval: 30000, // Fallback polling (WebSocket is primary)
+    refetchIntervalInBackground: false, // WebSocket handles real-time updates
   });
 }
 
