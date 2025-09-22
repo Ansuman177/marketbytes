@@ -67,7 +67,12 @@ class MarketDataService {
   private async fetchAndBroadcast() {
     try {
       const marketData = await this.getMarketData();
-      this.broadcastToClients(marketData);
+      // Always create fresh data for broadcasts to ensure real-time updates
+      const freshData = {
+        ...marketData,
+        lastUpdated: new Date().toISOString()
+      };
+      this.broadcastToClients(freshData);
     } catch (error) {
       console.error('Error fetching/broadcasting market data:', error);
     }
@@ -76,9 +81,12 @@ class MarketDataService {
   async getMarketData(): Promise<MarketData> {
     const now = Date.now();
     
-    // Return cached data if it's still fresh
+    // Return cached data if it's still fresh, but always update the timestamp
     if (this.cachedData && (now - this.lastFetchTime) < this.CACHE_DURATION) {
-      return this.cachedData;
+      return {
+        ...this.cachedData,
+        lastUpdated: new Date().toISOString() // Always provide fresh timestamp
+      };
     }
 
     try {

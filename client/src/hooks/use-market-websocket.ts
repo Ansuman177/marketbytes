@@ -38,7 +38,7 @@ export function useMarketWebSocket() {
       const host = window.location.host;
       const wsUrl = `${protocol}//${host}/ws/market`;
       
-      console.log('Connecting to WebSocket:', wsUrl);
+      console.log('Connecting to Market WebSocket:', wsUrl);
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
