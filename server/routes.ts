@@ -6,6 +6,21 @@ import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
+  // Serve assetlinks.json for TWA (Trusted Web Activity) support
+  app.get("/.well-known/assetlinks.json", (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.json([{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.marketbytes.app",
+        "sha256_cert_fingerprints": [
+          "94:88:A9:DD:2B:D6:BE:FF:75:F8:40:EF:61:8D:9D:7E:25:5B:F1:DB:EB:6C:C4:1A:43:A3:CD:71:7A:EB:D0:5C"
+        ]
+      }
+    }]);
+  });
+  
   // Fetch fresh news immediately instead of seeding old data
   await newsService.fetchLatestNews();
 
