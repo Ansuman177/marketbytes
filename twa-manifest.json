@@ -1,0 +1,47 @@
+{
+  "packageId": "com.marketbytes.app",
+  "host": "marketbytes.vercel.app",
+  "name": "MarketBytes",
+  "launcherName": "MarketBytes",
+  "display": "standalone",
+  "themeColor": "#10B981",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#111827",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://marketbytes.vercel.app/logo512.png",
+  "maskableIconUrl": "https://marketbytes.vercel.app/logo512.png",
+  "splashScreenFadeOutDuration": 300,
+
+  "signingKey": {
+  "path": "C:\\Users\\ansum\\MarketBytes\\android.keystore",
+  "alias": "android"
+  },
+  "appVersionName": "2",
+  "appVersionCode": 2,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://marketbytes.vercel.app/manifest.json",
+  "fallbackType": "webview",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": false,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://marketbytes.vercel.app/",
+  "minSdkVersion": 21,
+  "orientation": "default",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "appVersion": "2"
+}
